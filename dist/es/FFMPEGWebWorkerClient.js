@@ -23,179 +23,223 @@ import workerFile from "./FFMPEGWebWorker";
 import { EventEmitter } from "events";
 
 var FFMPEGWebworkerClient =
-/*#__PURE__*/
-function (_EventEmitter) {
-  _inherits(FFMPEGWebworkerClient, _EventEmitter);
+  /*#__PURE__*/
+  function (_EventEmitter) {
+    _inherits(FFMPEGWebworkerClient, _EventEmitter);
 
-  /**
-   * @type {Worker}
-   */
+    /**
+     * @type {Worker}
+     */
 
-  /**
-   * @type {Blob}
-   */
+    /**
+     * @type {Blob}
+     */
 
-  /**
-   * @type {Boolean}
-   */
-  function FFMPEGWebworkerClient() {
-    var _this;
+    /**
+     * @type {Boolean}
+     */
+    function FFMPEGWebworkerClient() {
+      var _this;
 
-    _classCallCheck(this, FFMPEGWebworkerClient);
+      _classCallCheck(this, FFMPEGWebworkerClient);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(FFMPEGWebworkerClient).call(this));
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(FFMPEGWebworkerClient).call(this));
 
-    _defineProperty(_assertThisInitialized(_this), "_worker", {});
+      _defineProperty(_assertThisInitialized(_this), "_worker", {});
 
-    _defineProperty(_assertThisInitialized(_this), "_inputFile", {});
+      _defineProperty(_assertThisInitialized(_this), "_inputFile", {});
 
-    _defineProperty(_assertThisInitialized(_this), "workerIsReady", false);
+      _defineProperty(_assertThisInitialized(_this), "workerIsReady", false);
 
-    _defineProperty(_assertThisInitialized(_this), "readFileAsBufferArray", function (file) {
-      return new Promise(function (resolve, reject) {
-        var fileReader = new FileReader();
+      _defineProperty(_assertThisInitialized(_this), "readFileAsBufferArray", function (file) {
+        return new Promise(function (resolve, reject) {
+          var fileReader = new FileReader();
 
-        fileReader.onload = function () {
-          resolve(this.result);
-        };
+          fileReader.onload = function () {
+            resolve(this.result);
+          };
 
-        fileReader.onerror = function () {
-          reject(this.error);
-        };
+          fileReader.onerror = function () {
+            reject(this.error);
+          };
 
-        fileReader.readAsArrayBuffer(file);
+          fileReader.readAsArrayBuffer(file);
+        });
       });
-    });
 
-    _defineProperty(_assertThisInitialized(_this), "runCommand", function (command) {
-      var totalMemory = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 33554432;
+      _defineProperty(_assertThisInitialized(_this), "runCommand", function (command) {
+        var totalMemory = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 33554432;
 
-      if (typeof command !== "string" || !command.length) {
-        throw new Error("command should be string and not empty");
-      }
+        if (typeof command !== "string" || !command.length) {
+          throw new Error("command should be string and not empty");
+        }
 
-      if (_this.inputFile && _this.inputFile.type) {
-        _this.convertInputFileToArrayBuffer().then(function (arrayBuffer) {
-          while (!_this.workerIsReady) {}
+        if (_this.inputFile && _this.inputFile.type) {
+          _this.convertInputFileToArrayBuffer().then(function (arrayBuffer) {
+            while (!_this.workerIsReady) { }
 
-          var filename = "video-".concat(Date.now(), ".webm");
-          var inputCommand = "-i ".concat(filename, " ").concat(command);
+            // var filename = "video-".concat(Date.now(), ".webm");
+            // var inputCommand = "-i ".concat(filename, " ").concat(command);
+            // _this.worker.postMessage({
+            //   type: "command",
+            //   arguments: inputCommand.split(" "),
+            //   files: [{
+            //     data: new Uint8Array(arrayBuffer),
+            //     name: filename
+            //   }],
+            //   totalMemory: totalMemory
+            // });
 
+            function _base64ToArrayBuffer(base64) {
+              var binary_string = window.atob(base64);
+              var len = binary_string.length;
+              var bytes = new Uint8Array(len);
+              for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+              }
+              return bytes.buffer;
+            }
+
+            // 4x3px
+            // const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAMAAACDKl70AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAAOSURBVHjaYmBAAQABBgAADwAB1KgyvAAAAABJRU5ErkJggg==`;
+
+            // 2x1px png
+            const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAMAAADD/I+4AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAANSURBVHjaYmBgAAgwAAADAAHTY1G2AAAAAElFTkSuQmCC`;
+
+            // BAD - 1x1px png doesnt work...
+            // const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAAMSURBVHjaYmAACDAAAAIAAU9tWeEAAAAASUVORK5CYII=`;
+
+            const imgArrBuff = _base64ToArrayBuffer(smallImgb64);
+
+            const custom = `-loop 1 -i img.png`
+            command = custom + command;
+            // var filename = "video-".concat(Date.now(), ".webm");
+            var filename = "video-".concat(Date.now(), ".mp3");
+            var inputCommand = "-i ".concat(filename, " ").concat(command);
+
+            console.log('inputCommand', inputCommand);
+
+            _this.worker.postMessage({
+              type: "command",
+              arguments: inputCommand.split(" "),
+              files: [
+                {
+                  data: new Uint8Array(arrayBuffer),
+                  name: filename
+                },
+                {
+                  data: new Uint8Array(imgArrBuff),
+                  name: 'img.png'
+                }
+              ],
+              totalMemory: totalMemory
+            });
+          });
+        } else {
           _this.worker.postMessage({
             type: "command",
-            arguments: inputCommand.split(" "),
-            files: [{
-              data: new Uint8Array(arrayBuffer),
-              name: filename
-            }],
+            arguments: command.split(" "),
             totalMemory: totalMemory
           });
-        });
-      } else {
-        _this.worker.postMessage({
-          type: "command",
-          arguments: command.split(" "),
-          totalMemory: totalMemory
-        });
-      }
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "log", function (message) {
-      return Array.isArray(message) ? console.log.call(null, message) : console.log(message);
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "isVideo", function (file) {
-      var fileType = file.type;
-      return file instanceof Blob && (fileType.includes("video") || fileType.includes("audio"));
-    });
-
-    _this.initWebWorker();
-
-    return _this;
-  }
-
-  _createClass(FFMPEGWebworkerClient, [{
-    key: "initWebWorker",
-    value: function initWebWorker() {
-      var _this2 = this;
-
-      this.worker = new WorkerFile(workerFile);
-      this.log;
-
-      var log = this.worker.onmessage = function (event) {
-        var message = event.data;
-
-        if (event && event.type) {
-          if (message.type == "ready") {
-            _this2.emit("onReady", "ffmpeg-asm.js file has been loaded.");
-
-            _this2.workerIsReady = true;
-          } else if (message.type == "stdout") {
-            _this2.emit("onStdout", message.data);
-          } else if (message.type == "start") {
-            _this2.emit("onFileReceived", "File Received");
-
-            log("file received ffmpeg command.");
-          } else if (message.type == "done") {
-            _this2.emit("onDone", message.data);
-          }
         }
-      };
-    }
-  }, {
-    key: "inputFileExists",
-    value: function inputFileExists() {
-      var inputFile = this.inputFile;
-      return !!(inputFile && inputFile instanceof Blob && inputFile.size && inputFile.type);
-    }
-    /**
-     * use worker to encode audio
-     * @param {Blob} inputFile
-     * @return {Promise<ArrayBuffer>}
-     */
+      });
 
-  }, {
-    key: "convertInputFileToArrayBuffer",
-    value: function convertInputFileToArrayBuffer() {
-      if (!this.inputFileExists()) {
-        throw new Error("Input File has not been set");
+      _defineProperty(_assertThisInitialized(_this), "log", function (message) {
+        return Array.isArray(message) ? console.log.call(null, message) : console.log(message);
+      });
+
+      _defineProperty(_assertThisInitialized(_this), "isVideo", function (file) {
+        var fileType = file.type;
+        return file instanceof Blob && (fileType.includes("video") || fileType.includes("audio"));
+      });
+
+      _this.initWebWorker();
+
+      return _this;
+    }
+
+    _createClass(FFMPEGWebworkerClient, [{
+      key: "initWebWorker",
+      value: function initWebWorker() {
+        var _this2 = this;
+
+        this.worker = new WorkerFile(workerFile);
+        this.log;
+
+        var log = this.worker.onmessage = function (event) {
+          var message = event.data;
+
+          if (event && event.type) {
+            if (message.type == "ready") {
+              _this2.emit("onReady", "ffmpeg-asm.js file has been loaded.");
+
+              _this2.workerIsReady = true;
+            } else if (message.type == "stdout") {
+              _this2.emit("onStdout", message.data);
+            } else if (message.type == "start") {
+              _this2.emit("onFileReceived", "File Received");
+
+              log("file received ffmpeg command.");
+            } else if (message.type == "done") {
+              _this2.emit("onDone", message.data);
+            }
+          }
+        };
       }
-
-      return this.readFileAsBufferArray(this.inputFile);
-    }
-    /**
-     * @param {String} command
-     */
-
-  }, {
-    key: "worker",
-    set: function set(worker) {
-      this._worker = worker;
-    },
-    get: function get() {
-      return this._worker;
-    }
-  }, {
-    key: "inputFile",
-    set: function set(inputFile) {
-      if (!this.isVideo(inputFile)) {
-        throw new Error("Input file is expected to be an audio or a video");
+    }, {
+      key: "inputFileExists",
+      value: function inputFileExists() {
+        var inputFile = this.inputFile;
+        return !!(inputFile && inputFile instanceof Blob && inputFile.size && inputFile.type);
       }
+      /**
+       * use worker to encode audio
+       * @param {Blob} inputFile
+       * @return {Promise<ArrayBuffer>}
+       */
 
-      this._inputFile = inputFile;
-    },
-    get: function get() {
-      return this._inputFile;
-    }
-    /**
-     * use worker to encode audio
-     * @param {Blob} file
-     * @return {Promise<ArrayBuffer>}
-     */
+    }, {
+      key: "convertInputFileToArrayBuffer",
+      value: function convertInputFileToArrayBuffer() {
+        if (!this.inputFileExists()) {
+          throw new Error("Input File has not been set");
+        }
 
-  }]);
+        return this.readFileAsBufferArray(this.inputFile);
+      }
+      /**
+       * @param {String} command
+       */
 
-  return FFMPEGWebworkerClient;
-}(EventEmitter);
+    }, {
+      key: "worker",
+      set: function set(worker) {
+        this._worker = worker;
+      },
+      get: function get() {
+        return this._worker;
+      }
+    }, {
+      key: "inputFile",
+      set: function set(inputFile) {
+        if (!this.isVideo(inputFile)) {
+          throw new Error("Input file is expected to be an audio or a video");
+        }
+
+        this._inputFile = inputFile;
+      },
+      get: function get() {
+        return this._inputFile;
+      }
+      /**
+       * use worker to encode audio
+       * @param {Blob} file
+       * @return {Promise<ArrayBuffer>}
+       */
+
+    }]);
+
+    return FFMPEGWebworkerClient;
+  }(EventEmitter);
 
 export { FFMPEGWebworkerClient as default };

@@ -67,10 +67,10 @@ export default class FFMPEGWebworkerClient extends EventEmitter {
   readFileAsBufferArray = file => {
     return new Promise((resolve, reject) => {
       let fileReader = new FileReader();
-      fileReader.onload = function() {
+      fileReader.onload = function () {
         resolve(this.result);
       };
-      fileReader.onerror = function() {
+      fileReader.onerror = function () {
         reject(this.error);
       };
       fileReader.readAsArrayBuffer(file);
@@ -108,19 +108,72 @@ export default class FFMPEGWebworkerClient extends EventEmitter {
     }
     if (this.inputFile && this.inputFile.type) {
       this.convertInputFileToArrayBuffer().then(arrayBuffer => {
-        while (!this.workerIsReady) {}
-        const filename = `video-${Date.now()}.webm`;
-        const inputCommand = `-i ${filename} ${command}`;
-        this.worker.postMessage({
+        while (!this.workerIsReady) { }
+
+        // og
+        // const filename = `video-${Date.now()}.webm`;
+        // const inputCommand = `-i ${filename} ${command}`;
+        // this.worker.postMessage({
+        //   type: "command",
+        //   arguments: inputCommand.split(" "),
+        //   files: [
+        //     {
+        //       data: new Uint8Array(arrayBuffer),
+        //       name: filename
+        //     }
+        //   ],
+        //   totalMemory
+        // });
+
+        function _base64ToArrayBuffer(base64) {
+          var binary_string = window.atob(base64);
+          var len = binary_string.length;
+          var bytes = new Uint8Array(len);
+          for (var i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+          }
+          return bytes.buffer;
+        }
+
+        // BAD 1x1px
+        // const smallImgb64 = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==`;
+
+        // 420x360px
+        // const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAeAAAAFACAMAAABTFl9JAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAACvSURBVHja7MExAQAAAMKg9U9tDQ+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+TYABAFleAAHIAZiHAAAAAElFTkSuQmCC`;
+
+        // 4x3px
+        // const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAMAAACDKl70AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAAOSURBVHjaYmBAAQABBgAADwAB1KgyvAAAAABJRU5ErkJggg==`;
+
+        // 2x1px png
+        const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAMAAADD/I+4AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAANSURBVHjaYmBgAAgwAAADAAHTY1G2AAAAAElFTkSuQmCC`;
+
+        // BAD - 1x1px png doesnt work...
+        // const smallImgb64 = `iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAMAAAAoyzS7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF////AAAAVcLTfgAAAAF0Uk5TAEDm2GYAAAAMSURBVHjaYmAACDAAAAIAAU9tWeEAAAAASUVORK5CYII=`;
+
+        const imgArrBuff = _base64ToArrayBuffer(smallImgb64);
+
+        const custom = `-loop 1 -i img.png`
+        command = custom + command;
+        // var filename = "video-".concat(Date.now(), ".webm");
+        var filename = "video-".concat(Date.now(), ".mp3");
+        var inputCommand = "-i ".concat(filename, " ").concat(command);
+
+        console.log('inputCommand', inputCommand);
+
+        _this.worker.postMessage({
           type: "command",
           arguments: inputCommand.split(" "),
           files: [
             {
               data: new Uint8Array(arrayBuffer),
               name: filename
+            },
+            {
+              data: new Uint8Array(imgArrBuff),
+              name: 'img.png'
             }
           ],
-          totalMemory
+          totalMemory: totalMemory
         });
       });
     } else {

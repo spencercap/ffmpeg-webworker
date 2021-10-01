@@ -1,13 +1,15 @@
 const workerFile = () => {
+  // const workerPath =
+  //   "https://cdn.rawgit.com/bgrins/videoconverter.js/master/build/ffmpeg-all-codecs.js";
   const workerPath =
-    "https://cdn.rawgit.com/bgrins/videoconverter.js/master/build/ffmpeg-all-codecs.js";
+    "https://raw.githubusercontent.com/spencercap/ffmpeg-webworker/master/ffmpeg-all-codecs.js";
 
   importScripts(workerPath);
   const now = Date.now;
   function print(text) {
     postMessage({ type: "stdout", data: text });
   }
-  onmessage = function(event) {
+  onmessage = function (event) {
     const message = event.data;
     if (message.type === "command") {
       const Module = {
@@ -15,7 +17,7 @@ const workerFile = () => {
         printErr: print,
         files: message.files || [],
         arguments: message.arguments || [],
-        TOTAL_MEMORY: message.totalMemory || 33554432
+        TOTAL_MEMORY: message.totalMemory || 33554432,
       };
       postMessage({ type: "start", data: Module.arguments.join(" ") });
       postMessage({
@@ -25,14 +27,14 @@ const workerFile = () => {
           Module.arguments.join(" ") +
           (Module.TOTAL_MEMORY
             ? ".  Processing with " + Module.TOTAL_MEMORY + " bits."
-            : "")
+            : ""),
       });
       const time = now();
       const result = ffmpeg_run(Module);
       const totalTime = now() - time;
       postMessage({
         type: "stdout",
-        data: "Finished processing (took " + totalTime + "ms)"
+        data: "Finished processing (took " + totalTime + "ms)",
       });
       postMessage({ type: "done", data: result, time: totalTime });
     }

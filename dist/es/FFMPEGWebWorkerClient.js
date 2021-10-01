@@ -125,7 +125,7 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
 
           var filename = "video-".concat(Date.now(), ".mp3");
           var inputCommand = "-i ".concat(filename, " ").concat(command);
-          console.log('inputCommand', inputCommand);
+          console.log("inputCommand", inputCommand);
 
           _this.worker.postMessage({
             type: "command",
@@ -135,7 +135,7 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
               name: filename
             }, {
               data: new Uint8Array(imgArrBuff),
-              name: 'img.png'
+              name: "img.png"
             }],
             totalMemory: totalMemory
           });

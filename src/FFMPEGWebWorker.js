@@ -1,9 +1,6 @@
 const workerFile = () => {
   const workerPath =
-    "https://cdn.rawgit.com/bgrins/videoconverter.js/master/build/ffmpeg-all-codecs.js";
-  // yields empty MIME type...
-  // const workerPath =
-  //   "https://raw.githubusercontent.com/spencercap/ffmpeg-webworker/master/ffmpeg-all-codecs.js";
+    "https://rawcdn.githack.com/spencercap/ffmpeg-webworker/1fc6d1438637bb2a14c90e199c025624a0c981d2/ffmpeg-all-codecs.js";
 
   importScripts(workerPath);
   const now = Date.now;

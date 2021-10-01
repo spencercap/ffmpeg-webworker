@@ -61,9 +61,6 @@
   ],
   "author": "",
   "license": "MIT",
-  "peerDependencies": {
-    "react": ">= 16.8"
-  },
   "dependencies": {
     "attr-accept": "^1.1.3",
     "file-selector": "^0.1.11",

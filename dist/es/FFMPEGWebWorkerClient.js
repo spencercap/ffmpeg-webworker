@@ -43,19 +43,19 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
    * @type {Boolean}
    */
   function FFMPEGWebworkerClient() {
-    var _this2;
+    var _this;
 
     _classCallCheck(this, FFMPEGWebworkerClient);
 
-    _this2 = _super.call(this);
+    _this = _super.call(this);
 
-    _defineProperty(_assertThisInitialized(_this2), "_worker", {});
+    _defineProperty(_assertThisInitialized(_this), "_worker", {});
 
-    _defineProperty(_assertThisInitialized(_this2), "_inputFile", {});
+    _defineProperty(_assertThisInitialized(_this), "_inputFile", {});
 
-    _defineProperty(_assertThisInitialized(_this2), "workerIsReady", false);
+    _defineProperty(_assertThisInitialized(_this), "workerIsReady", false);
 
-    _defineProperty(_assertThisInitialized(_this2), "readFileAsBufferArray", function (file) {
+    _defineProperty(_assertThisInitialized(_this), "readFileAsBufferArray", function (file) {
       return new Promise(function (resolve, reject) {
         var fileReader = new FileReader();
 
@@ -71,16 +71,16 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
       });
     });
 
-    _defineProperty(_assertThisInitialized(_this2), "runCommand", function (command) {
+    _defineProperty(_assertThisInitialized(_this), "runCommand", function (command) {
       var totalMemory = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 33554432;
 
       if (typeof command !== "string" || !command.length) {
         throw new Error("command should be string and not empty");
       }
 
-      if (_this2.inputFile && _this2.inputFile.type) {
-        _this2.convertInputFileToArrayBuffer().then(function (arrayBuffer) {
-          while (!_this2.workerIsReady) {} // og
+      if (_this.inputFile && _this.inputFile.type) {
+        _this.convertInputFileToArrayBuffer().then(function (arrayBuffer) {
+          while (!_this.workerIsReady) {} // og
           // const filename = `video-${Date.now()}.webm`;
           // const inputCommand = `-i ${filename} ${command}`;
           // this.worker.postMessage({
@@ -141,7 +141,7 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
           });
         });
       } else {
-        _this2.worker.postMessage({
+        _this.worker.postMessage({
           type: "command",
           arguments: command.split(" "),
           totalMemory: totalMemory
@@ -149,24 +149,24 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
       }
     });
 
-    _defineProperty(_assertThisInitialized(_this2), "log", function (message) {
+    _defineProperty(_assertThisInitialized(_this), "log", function (message) {
       return Array.isArray(message) ? console.log.call(null, message) : console.log(message);
     });
 
-    _defineProperty(_assertThisInitialized(_this2), "isVideo", function (file) {
+    _defineProperty(_assertThisInitialized(_this), "isVideo", function (file) {
       var fileType = file.type;
       return file instanceof Blob && (fileType.includes("video") || fileType.includes("audio"));
     });
 
-    _this2.initWebWorker();
+    _this.initWebWorker();
 
-    return _this2;
+    return _this;
   }
 
   _createClass(FFMPEGWebworkerClient, [{
     key: "initWebWorker",
     value: function initWebWorker() {
-      var _this3 = this;
+      var _this2 = this;
 
       this.worker = new WorkerFile(workerFile);
       this.log;
@@ -176,17 +176,17 @@ var FFMPEGWebworkerClient = /*#__PURE__*/function (_EventEmitter) {
 
         if (event && event.type) {
           if (message.type == "ready") {
-            _this3.emit("onReady", "ffmpeg-asm.js file has been loaded.");
+            _this2.emit("onReady", "ffmpeg-asm.js file has been loaded.");
 
-            _this3.workerIsReady = true;
+            _this2.workerIsReady = true;
           } else if (message.type == "stdout") {
-            _this3.emit("onStdout", message.data);
+            _this2.emit("onStdout", message.data);
           } else if (message.type == "start") {
-            _this3.emit("onFileReceived", "File Received");
+            _this2.emit("onFileReceived", "File Received");
 
             log("file received ffmpeg command.");
           } else if (message.type == "done") {
-            _this3.emit("onDone", message.data);
+            _this2.emit("onDone", message.data);
           }
         }
       };
